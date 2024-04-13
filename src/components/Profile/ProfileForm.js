@@ -1,4 +1,4 @@
-import { useRef, useContext } from "react";
+import { useRef, useContext, useEffect } from "react";
 
 import AuthContext from "../../Store/AuthContext";
 import classes from "./ProfileForm.module.css";
@@ -9,6 +9,32 @@ const ProfileForm = () => {
   const profileUrlInputRef = useRef();
   const authCtx = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch(
+      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAhuy9etUmIzXrPqllJWraWyifK23i6Jko",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idToken: authCtx.token,
+        }),
+      }
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        const userData = data.users[0];
+        fullNameInputRef.current.value = userData.displayName;
+        profileUrlInputRef.current.value = userData.photoUrl;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   const cancelHandler = () => {
     navigate("/");
@@ -37,9 +63,11 @@ const ProfileForm = () => {
     )
       .then((response) => response.json())
       .then((data) => {
+        //Handle the successful response here
         console.log(data);
       })
       .catch((error) => {
+        // Handle any errors here
         console.error(error);
       });
     fullNameInputRef.current.value = "";

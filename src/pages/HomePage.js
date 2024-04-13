@@ -5,7 +5,6 @@ import classes from "./HomePage.module.css";
 
 const HomePage = () => {
   const authCtx = useContext(AuthContext);
-  console.log(authCtx.isLoggedIn);
   const navigate = useNavigate();
 
   const profileHandler = () => {
