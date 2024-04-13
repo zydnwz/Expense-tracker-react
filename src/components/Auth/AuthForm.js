@@ -1,4 +1,5 @@
 import { useState, useRef, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 import AuthContext from "../../Store/AuthContext";
 import classes from "./AuthForm.module.css";
@@ -9,13 +10,14 @@ const AuthForm = () => {
   const confirmPasswordInputRef = useRef();
 
   const authCtx = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [error, setError] = useState();
 
-  const switchAuthModeHandler = () => {
+  const swithcAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
   };
 
@@ -24,34 +26,33 @@ const AuthForm = () => {
 
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
-    const enteredPassword2 = confirmPasswordInputRef.current.value;
 
-    if (
-      enteredEmail &&
-      enteredPassword &&
-      enteredPassword2 &&
-      enteredPassword === enteredPassword2
-    ) {
-      setIsFormValid(true);
-    } else {
-      if (enteredPassword !== enteredPassword2) {
+    if (!isLogin) {
+      const enteredPassword2 = confirmPasswordInputRef.current.value;
+      if (
+        enteredEmail &&
+        enteredPassword &&
+        enteredPassword2 &&
+        enteredPassword === enteredPassword2
+      ) {
+        setIsFormValid(true);
+      } else if (enteredPassword !== enteredPassword2) {
         setError("Passwords didn't match");
         console.log("Passwords didn't match");
       } else {
         setError("All Fields Are Required");
         console.log("All Fields Are Required");
       }
-      return;
     }
 
     setIsLoading(true);
     let URL;
-    if (isLogin && isFormValid) {
+    if (isLogin) {
       URL =
         "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAhuy9etUmIzXrPqllJWraWyifK23i6Jko";
-    } else {
+    } else if (isFormValid) {
       URL =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAhuy9etUmIzXrPqllJWraWyifK23i6Jko        ";
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAhuy9etUmIzXrPqllJWraWyifK23i6Jko";
     }
     fetch(URL, {
       method: "POST",
@@ -78,6 +79,7 @@ const AuthForm = () => {
       })
       .then((data) => {
         authCtx.login(data.idToken);
+        navigate("/");
       })
       .catch((err) => {
         alert(err.message);
@@ -114,7 +116,7 @@ const AuthForm = () => {
                 required
                 ref={passwordInputRef}
               />
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="password">confirm Password</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -132,9 +134,9 @@ const AuthForm = () => {
           <button
             type="button"
             className={classes.toggle}
-            onClick={switchAuthModeHandler}
+            onClick={swithcAuthModeHandler}
           >
-            {isLogin ? "Create new account" : "Have an account? Login"}
+            {isLogin ? "Create new account" : "have an account? Login"}
           </button>
         </div>
       </form>
