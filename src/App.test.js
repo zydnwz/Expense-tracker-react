@@ -5,6 +5,7 @@ import ProfileForm from "./components/Profile/ProfileForm";
 import MainNavigation from "./components/Layout/MainNavigation";
 import HomePage from "./pages/HomePage";
 import AuthForm from "./components/Auth/AuthForm";
+import ExpenseContext from "./Store/ExpenseContext";
 
 describe("Expense Tracker Component", () => {
   test("renders Money Spent as a test", () => {
@@ -24,6 +25,58 @@ describe("Expense Tracker Component", () => {
     const categoryElement = screen.getByText("Category:");
     expect(categoryElement).toBeInTheDocument();
   });
+
+  test("renders Add Expense button", () => {
+    render(<ExpenseTracker />);
+    const addExpenseButton = screen.getByRole("button", { name: "Add Expense" });
+    expect(addExpenseButton).toBeInTheDocument();
+  });
+
+  test("allows user to add new expense", async () => {
+    // Mock the fetch request
+    window.fetch = jest.fn();
+    window.fetch.mockResolvedValueOnce({
+      json: async () => ({ success: true }),
+    });
+
+    // Render the component
+    render(<ExpenseTracker />);
+
+    // Simulate user interaction
+    userEvent.click(screen.getByRole("button", { name: "Add Expense" }));
+    userEvent.type(screen.getByLabelText("Description:"), "Groceries");
+    userEvent.type(screen.getByLabelText("Amount:"), "50");
+    userEvent.selectOptions(screen.getByLabelText("Category:"), "Food");
+    userEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    // Wait for the fetch call to resolve
+    await screen.findByText("Expense added successfully");
+
+    // Check if success message is displayed
+    expect(screen.getByText("Expense added successfully")).toBeInTheDocument();
+  });
+
+  test("displays error message if adding expense fails", async () => {
+    // Mock the fetch request
+    window.fetch = jest.fn();
+    window.fetch.mockRejectedValueOnce(new Error("Failed to add expense"));
+
+    // Render the component
+    render(<ExpenseTracker />);
+
+    // Simulate user interaction
+    userEvent.click(screen.getByRole("button", { name: "Add Expense" }));
+    userEvent.type(screen.getByLabelText("Description:"), "Groceries");
+    userEvent.type(screen.getByLabelText("Amount:"), "50");
+    userEvent.selectOptions(screen.getByLabelText("Category:"), "Food");
+    userEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    // Wait for the fetch call to reject
+    await screen.findByText("Failed to add expense");
+
+    // Check if error message is displayed
+    expect(screen.getByText("Failed to add expense")).toBeInTheDocument();
+  });
 });
 
 describe("Profile Form Component", () => {
@@ -37,6 +90,17 @@ describe("Profile Form Component", () => {
     render(<ProfileForm />);
     const profilePhotoElement = screen.getByText("Profile Photot URL");
     expect(profilePhotoElement).toBeInTheDocument();
+  });
+
+  test("renders post if request succeeds", async () => {
+    window.fetch = jest.fn();
+    window.fetch.mockResolvedValueOnce({
+      json: async () => [{ id: "p1", title: "First post" }],
+    });
+    render(<ProfileForm />);
+
+    const listItemElements = await screen.findAllByRole("listitem");
+    expect(listItemElements).not.toHaveLength(0);
   });
 });
 
@@ -115,5 +179,18 @@ describe("AuthForm Component", () => {
       exact: false,
     });
     expect(outputElement).toBeInTheDocument();
+  });
+});
+
+describe("ExpenseContext Component", () => {
+  test("renders post if request succeeds", async () => {
+    window.fetch = jest.fn();
+    window.fetch.mockResolvedValueOnce({
+      json: async () => [{ id: "p1", title: "First post" }],
+    });
+    render(<ExpenseContext />);
+
+    const listItemElements = await screen.findAllByRole("listitem");
+    expect(listItemElements).not.toHaveLength(0);
   });
 });
