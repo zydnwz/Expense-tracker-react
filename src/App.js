@@ -45,8 +45,40 @@ function App() {
       );
     };
 
+    const fetchCartData = async () => {
+      dispatch(
+        uiActions.showNotification({
+          status: "pending",
+          title: "Loading...",
+          message: "Fetching cart data!",
+        })
+      );
+
+      try {
+        const response = await fetch(
+          "https://redux-demo-25547-default-rtdb.firebaseio.com/cart.json"
+        );
+
+        if (!response.ok) {
+          throw new Error("Fetching cart data failed.");
+        }
+
+        const data = await response.json();
+        
+      } catch (error) {
+        dispatch(
+          uiActions.showNotification({
+            status: "error",
+            title: "Error!",
+            message: "Fetching cart data failed!",
+          })
+        );
+      }
+    };
+
     if (isInitial) {
       isInitial = false;
+      fetchCartData();
       return;
     }
 
@@ -55,7 +87,7 @@ function App() {
         uiActions.showNotification({
           status: "error",
           title: "Error!",
-          message: "Sending cart data failed!!",
+          message: "Sending cart data failed!",
         })
       );
     });
