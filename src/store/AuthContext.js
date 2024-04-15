@@ -16,6 +16,7 @@ export const AuthContextProvider = (props) => {
   const [token, setToken] = useState(initialToken);
   const [email, setEmail] = useState(initialEmail);
 
+  //redux dispatch
   const dispatch = useDispatch();
 
   const userIsLoggedIn = !!token;
@@ -36,6 +37,7 @@ export const AuthContextProvider = (props) => {
     localStorage.removeItem("token");
     localStorage.removeItem("email");
 
+    //dispatch actions
     dispatch(authActions.logout());
   };
 
